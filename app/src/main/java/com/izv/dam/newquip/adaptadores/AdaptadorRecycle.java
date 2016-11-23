@@ -55,6 +55,7 @@ public class AdaptadorRecycle extends RecyclerView.Adapter<AdaptadorRecycle.Nota
         }
 
 
+
         public void bindNota(Nota n) {
             txTitulo.setText(n.getTitulo());
             txContenido.setText(n.getNota());
