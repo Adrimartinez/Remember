@@ -1,8 +1,10 @@
 package com.izv.dam.newquip.vistas.notas;
 
 import android.content.Context;
+import android.database.Cursor;
 
 import com.izv.dam.newquip.contrato.ContratoNota;
+import com.izv.dam.newquip.pojo.Lista;
 import com.izv.dam.newquip.pojo.Nota;
 
 public class PresentadorNota implements ContratoNota.InterfacePresentador {
@@ -27,6 +29,19 @@ public class PresentadorNota implements ContratoNota.InterfacePresentador {
     @Override
     public long onSaveNota(Nota n) {
         return this.modelo.saveNota(n);
+    }
+
+    @Override
+    public long onSaveLista(Lista l) {
+        return this.modelo.saveLista(l);
+    }
+
+    public Cursor getListas(long id) {
+        return this.modelo.getListas(id);
+    }
+
+    public int deleteLista(int id) {
+        return this.modelo.deleteLista(id);
     }
 
 }

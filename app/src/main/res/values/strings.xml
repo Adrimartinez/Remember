@@ -9,4 +9,12 @@
     // nota
     <string name="nota">Nota</string>
     <string name="titulo">Titulo</string>
+    <string name="adNota">Añadir Nota</string>
+    <string name="addLista">Añadir Lista</string>
+    <string name="addCategoria">Añadir Categoria</string>
+    <string name="addFoto">Añadir Foto</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
 </resources>

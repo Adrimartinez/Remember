@@ -14,7 +14,7 @@ public class Ayudante extends SQLiteOpenHelper {
     //fechas https://www.sqlite.org/lang_datefunc.html
     //trigger https://www.sqlite.org/lang_createtrigger.html
 
-    private static final int VERSION = 1;
+    public static final int VERSION = 4;
 
     public Ayudante(Context context) {
         super(context, ContratoBaseDatos.BASEDATOS, null, VERSION);
@@ -23,20 +23,30 @@ public class Ayudante extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         String sql;
-        sql="create table if not exists " + ContratoBaseDatos.TablaNota.TABLA +
+        sql = "create table if not exists " + ContratoBaseDatos.TablaNota.TABLA +
                 " (" +
                 ContratoBaseDatos.TablaNota._ID + " integer primary key autoincrement , " +
                 ContratoBaseDatos.TablaNota.TITULO + " text, " +
-                ContratoBaseDatos.TablaNota.NOTA + " text " +
-                ")";
-        Log.v("sql",sql);
+                ContratoBaseDatos.TablaNota.NOTA + " text, " +
+                ContratoBaseDatos.TablaNota.FOTO + " text, " +
+                ContratoBaseDatos.TablaNota.ID_ETIQUETAS + " integer " +
+                " ); ";
+        db.execSQL(sql);
+        sql =   "create table if not exists " + ContratoBaseDatos.TablaLista.TABLA +
+                " (" +
+                ContratoBaseDatos.TablaLista._ID + " integer primary key autoincrement , " +
+                ContratoBaseDatos.TablaLista.ID_NOTA + " integer, " +
+                ContratoBaseDatos.TablaLista.CONTENIDO + " text, " +
+                ContratoBaseDatos.TablaLista.MARCA + " integer " +
+                " ); ";
         db.execSQL(sql);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        String sql="drop table if exists " + ContratoBaseDatos.TablaNota.TABLA;
+        String sql = "drop table if exists " + ContratoBaseDatos.TablaNota.TABLA + "; ";
         db.execSQL(sql);
-        Log.v("sql",sql);
+        sql = "drop table if exists " + ContratoBaseDatos.TablaLista.TABLA + "; ";
+        db.execSQL(sql);
     }
 }

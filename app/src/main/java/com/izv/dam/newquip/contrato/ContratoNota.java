@@ -1,5 +1,9 @@
 package com.izv.dam.newquip.contrato;
 
+import android.database.Cursor;
+import android.net.Uri;
+
+import com.izv.dam.newquip.pojo.Lista;
 import com.izv.dam.newquip.pojo.Nota;
 
 public interface ContratoNota {
@@ -8,9 +12,15 @@ public interface ContratoNota {
 
         void close();
 
-        Nota getNota(long id);
+        Nota getNota();
 
         long saveNota(Nota n);
+
+        long saveLista(Lista l);
+
+        int deleteLista(int l);
+
+        Cursor getListas(long id);
 
     }
 
@@ -21,6 +31,8 @@ public interface ContratoNota {
         void onResume();
 
         long onSaveNota(Nota n);
+
+        long onSaveLista(Lista l);
 
     }
 
