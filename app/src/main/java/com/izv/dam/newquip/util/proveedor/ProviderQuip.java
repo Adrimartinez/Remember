@@ -1,18 +1,17 @@
-package com.izv.dam.newquip.proveedor;
+package com.izv.dam.newquip.util.proveedor;
 
 import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.Loader;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.izv.dam.newquip.contrato.ContratoBaseDatos;
-import com.izv.dam.newquip.gestion.GestionLista;
-import com.izv.dam.newquip.gestion.GestionNota;
-import com.izv.dam.newquip.util.UtilCadenas;
+import com.izv.dam.newquip.util.contrato.ContratoBaseDatos;
+import com.izv.dam.newquip.util.gestion.GestionLista;
+import com.izv.dam.newquip.util.gestion.GestionNota;
+import com.izv.dam.newquip.util.util.UtilCadenas;
 
 import static com.izv.dam.newquip.contrato.ContratoBaseDatos.TablaNota.CONTENT_ITEM_TYPE;
 import static com.izv.dam.newquip.contrato.ContratoBaseDatos.TablaNota.CONTENT_TYPE;
