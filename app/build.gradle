@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 
 android {
 
+
     compileSdkVersion 25
     buildToolsVersion "24.0.3"
     defaultConfig {
@@ -11,6 +12,7 @@ android {
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
+        vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -36,5 +38,7 @@ dependencies {
     compile 'com.google.code.gson:gson:2.8.0'
     compile 'com.getbase:floatingactionbutton:1.10.1'
     compile 'com.squareup.picasso:picasso:2.5.0'
+    compile 'com.itextpdf.tool:xmlworker:5.5.10'
+    compile 'com.itextpdf:itextg:5.5.10'
     testCompile 'junit:junit:4.12'
 }

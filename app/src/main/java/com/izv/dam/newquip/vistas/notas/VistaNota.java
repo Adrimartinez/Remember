@@ -3,6 +3,8 @@ package com.izv.dam.newquip.vistas.notas;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -10,12 +12,14 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
@@ -23,6 +27,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -31,16 +37,27 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
-
+import com.itextpdf.text.BadElementException;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chapter;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.tool.xml.XMLWorkerHelper;
 import com.izv.dam.newquip.BuildConfig;
 import com.izv.dam.newquip.R;
 import com.izv.dam.newquip.contrato.ContratoNota;
 import com.izv.dam.newquip.pojo.Lista;
 import com.izv.dam.newquip.pojo.Nota;
-import com.squareup.picasso.Picasso;
-
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -49,8 +66,6 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
 
 
     private static final int MY_PERMISSIONS = 20;
-    private static final int PERMISSION_CAMERA = 21;
-    private static final int PERMISSION_STORAGE = 22;
     private CollapsingToolbarLayout barraTitulo;
     private EditText editTextTitulo, editTextNota;
     private Nota nota = new Nota();
@@ -60,16 +75,16 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
     private BitmapFactory.Options options;
     private LinearLayout ly;
     private com.getbase.floatingactionbutton.FloatingActionButton agregar;
-    //private EditText oculto;
-    //private LayoutInflater li;
     private ImageButton button;
     private final static int CAMERA_REQUEST = 1;
     private final static int GALERY_REQUEST = 2;
-    private com.getbase.floatingactionbutton.FloatingActionButton camara;
     private int categoria;
     private String mCurrentPhotoPath;
     private Uri file;
     private String rutaTemp;
+    private static final String NOMBRE_CARPETA_APP = "com.izv.dam.newquip";
+    private static final String GENERADOS = "MisArchivos";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +93,7 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
 
         presentador = new PresentadorNota(this);
         imagen = (ImageView) findViewById(R.id.imagen);
+        nota.setIdEtiqueta(-1);
 
         editTextTitulo = (EditText) findViewById(R.id.etTitulo);
         editTextNota = (EditText) findViewById(R.id.etNota);
@@ -92,7 +108,6 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
         }
         mostrarNota(nota);
         init();
-
     }
 
     @Override
@@ -206,64 +221,10 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
         options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
 
-//        BitmapFactory.decodeResource(getResources(), R.drawable.androidcpu, options);
-//
-//        BitmapDrawable im = new BitmapDrawable(getResources(), imagenResuelta(getResources(), R.drawable.androidcpu, 250, 200));
-//
-//        imagen = (ImageView) findViewById(R.id.imagen);
-//        imagen.setBackground(im);
-
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        //toolbar.inflateMenu(R.drawable.ic_insert_drive_file_black_24dp);
+
         setSupportActionBar(toolbar);
-
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-
-        //AÑADIR FOTO
-        com.getbase.floatingactionbutton.FloatingActionButton camara = (com.getbase.floatingactionbutton.FloatingActionButton) findViewById(R.id.addFoto);
-        //camara = (FloatingActionButton) findViewById(R.id.camara);
-        camara.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (ContextCompat.checkSelfPermission(VistaNota.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
-                        && ContextCompat.checkSelfPermission(VistaNota.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-
-                    if (ActivityCompat.shouldShowRequestPermissionRationale(VistaNota.this, Manifest.permission.CAMERA)
-                            && ActivityCompat.shouldShowRequestPermissionRationale(VistaNota.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-
-                    } else {
-
-                        ActivityCompat.requestPermissions(VistaNota.this,
-                                new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                                MY_PERMISSIONS);
-                    }
-                }
-
-                final CharSequence[] items = {"Sacar una foto", "Elegir de galeria"};
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(VistaNota.this);
-                builder.setTitle("Elige imagen");
-                builder.setItems(items, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int item) {
-                        if (items[item].equals("Sacar una foto")) {
-                            try {
-                                takePicture();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-//                            Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//                            startActivityForResult(cameraIntent, CAMERA_REQUEST);
-                        } else if (items[item].equals("Elegir de galeria")) {
-                            Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                            startActivityForResult(i, GALERY_REQUEST);
-                        }
-                    }
-                });
-                builder.show();
-            }
-        });
 
         //AÑADIR CATEGORIA
         com.getbase.floatingactionbutton.FloatingActionButton addCategoria = (com.getbase.floatingactionbutton.FloatingActionButton) findViewById(R.id.addCategoria);
@@ -274,7 +235,7 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
                 final CharSequence[] items = {"Trabajo", "Compras", "Ocio", "Otros"};
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(VistaNota.this);
-                builder.setTitle("Elige una categoria");
+                builder.setTitle(R.string.categorias);
                 if (nota.getIdEtiqueta() > -1) {
                     categoria = (int) nota.getIdEtiqueta();
                 } else {
@@ -298,35 +259,51 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
             }
         });
 
-        //AÑADIR LISTA
-        ly = (LinearLayout) findViewById(R.id.listaEnNota);
-        agregar = (com.getbase.floatingactionbutton.FloatingActionButton) findViewById(R.id.addLista);
         CollapsingToolbarLayout a = (CollapsingToolbarLayout) findViewById(R.id.barraTitulo);
         a.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final LayoutInflater li = LayoutInflater.from(VistaNota.this);
-                final RelativeLayout card = (RelativeLayout) li.inflate(R.layout.activity_content_lista, null, false);
-                final EditText oculto = (EditText) card.findViewById(R.id.oculto);
-                oculto.setText("0");
-                button = (ImageButton) card.findViewById(R.id.delete);
-                button.setOnClickListener(new View.OnClickListener() {
+                if (ContextCompat.checkSelfPermission(VistaNota.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+                        && ContextCompat.checkSelfPermission(VistaNota.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(VistaNota.this, Manifest.permission.CAMERA)
+                            && ActivityCompat.shouldShowRequestPermissionRationale(VistaNota.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+                    } else {
+
+                        ActivityCompat.requestPermissions(VistaNota.this,
+                                new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                MY_PERMISSIONS);
+                    }
+                }
+                final CharSequence[] items = {"Sacar una foto", "Elegir de la galeria"};
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(VistaNota.this);
+                builder.setTitle(R.string.menuCamara);
+                builder.setItems(items, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
-                        int id = Integer.parseInt(oculto.getText().toString());
-                        if (id != 0) {
-                            Log.v("BORRANDO", "ID!!!!=0");
-                            presentador.deleteLista(id);
-                            ((LinearLayout) card.getParent()).removeView(card);
-                        } else {
-                            Log.v("BORRANDO", "ID=0");
-                            ((LinearLayout) card.getParent()).removeView(card);
+                    public void onClick(DialogInterface dialog, int item) {
+                        if (items[item].equals("Sacar una foto")) {
+                            try {
+                                takePicture();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+//                            Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//                            startActivityForResult(cameraIntent, CAMERA_REQUEST);
+                        } else if (items[item].equals("Elegir de la galeria")) {
+                            Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                            startActivityForResult(i, GALERY_REQUEST);
                         }
                     }
                 });
-                ly.addView(card);
+                builder.show();
             }
         });
+
+        //AÑADIR LISTA
+        ly = (LinearLayout) findViewById(R.id.listaEnNota);
+        agregar = (com.getbase.floatingactionbutton.FloatingActionButton) findViewById(R.id.addLista);
         agregar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -359,46 +336,68 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
 
     }
 
-    /*
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
 
-    public static int calcularTamaño(BitmapFactory.Options options, int reqAlto, int reqAncho) {
-
-        int tamaño = 1;
-
-        int ancho = options.outWidth;
-        int alto = options.outHeight;
-        String tipo = options.outMimeType;
-
-        if (alto > reqAlto || ancho > reqAncho) {
-            final int nuevoAlto = alto / 2;
-            final int nuevoAncho = ancho / 2;
-
-            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
-            while ((nuevoAlto / tamaño) >= reqAlto
-                    && (nuevoAncho / tamaño) >= reqAncho) {
-                tamaño *= 2;
-            }
-        }
-
-        return tamaño;
+        getMenuInflater().inflate(R.menu.imprimir, menu);
+        return true;
 
     }
 
-    public static Bitmap imagenResuelta(Resources res, int resId, int reqAlto, int reqAncho) {
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
 
-        // First decode with inJustDecodeBounds=true to check dimensions
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeResource(res, resId, options);
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
+            case R.id.op_imprimir:
+                second sc = new second();
+                sc.execute();
+                return true;
+            case R.id.op_camera:
 
-        // Calculate inSampleSize
-        options.inSampleSize = calcularTamaño(options, reqAncho, reqAlto);
+                if (ContextCompat.checkSelfPermission(VistaNota.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+                        && ContextCompat.checkSelfPermission(VistaNota.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeResource(res, resId, options);
-    }*/
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(VistaNota.this, Manifest.permission.CAMERA)
+                            && ActivityCompat.shouldShowRequestPermissionRationale(VistaNota.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+                    } else {
+
+                        ActivityCompat.requestPermissions(VistaNota.this,
+                                new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                MY_PERMISSIONS);
+                    }
+                }
+                final CharSequence[] items = {"Sacar una foto", "Elegir de la galeria"};
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(VistaNota.this);
+                builder.setTitle(R.string.menuCamara);
+                builder.setItems(items, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int item) {
+                        if (items[item].equals("Sacar una foto")) {
+                            try {
+                                takePicture();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+//                            Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//                            startActivityForResult(cameraIntent, CAMERA_REQUEST);
+                        } else if (items[item].equals("Elegir de la galeria")) {
+                            Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                            startActivityForResult(i, GALERY_REQUEST);
+                        }
+                    }
+                });
+                builder.show();
+                return true;
+            default:
+                return true;
+        }
+    }
+
 
     private String getRealPath(Uri datos) {
         String res = null;
@@ -415,34 +414,26 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CAMERA_REQUEST) {
-            if(resultCode == Activity.RESULT_CANCELED){
+            if (resultCode == Activity.RESULT_CANCELED) {
 
-            }else if (resultCode == Activity.RESULT_OK){
+            } else if (resultCode == Activity.RESULT_OK) {
                 mCurrentPhotoPath = rutaTemp;
-                Log.v("ruta",mCurrentPhotoPath);
+                Log.v("ruta", mCurrentPhotoPath);
                 galleryAddPic(mCurrentPhotoPath);
                 setPic(mCurrentPhotoPath);
-                Log.v("ruta buena",mCurrentPhotoPath);
+                Log.v("ruta buena", mCurrentPhotoPath);
                 nota.setFoto(mCurrentPhotoPath);
             }
 
-//            Bitmap photo = (Bitmap) data.getExtras().get("data");
-//
-//            BitmapDrawable im = new BitmapDrawable(photo);
-//
-//            imagen.setBackground(im);
-//            imagen.setImageBitmap(photo);
         }
         if (requestCode == GALERY_REQUEST && resultCode == RESULT_OK && null != data) {
 
             Uri selectedImage = data.getData();
-            if(getRealPath(selectedImage).length() > 1){
+            if (getRealPath(selectedImage).length() > 1) {
                 mCurrentPhotoPath = getRealPath(selectedImage);
                 setPic(mCurrentPhotoPath);
                 nota.setFoto(mCurrentPhotoPath);
             }
-
-            //imagen.setImageURI(selectedImage);
         }
     }
 
@@ -508,7 +499,6 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
             mCurrentPhotoPath = nota.getFoto();
             setPic(mCurrentPhotoPath);
         }
-
     }
 
     @Override
@@ -522,5 +512,123 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
             }
         }
     }
+
+    class second extends AsyncTask<Void,Void,String>{
+
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            return generaPDF();
+        }
+        @Override
+        protected void onPostExecute(String o) {
+            super.onPostExecute(o);
+            muestraPDF(o,getBaseContext());
+        }
+    }
+
+    public String generaPDF() {
+        Document document = new Document(PageSize.LETTER);
+
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String NOMBRE_ARCHIVO = timeStamp + ".pdf";
+        String tarjetaSD = Environment.getExternalStorageDirectory().toString();
+        File pdfDir = new File(tarjetaSD + File.separator + NOMBRE_CARPETA_APP);
+
+        if (!pdfDir.exists()) {
+            pdfDir.mkdir();
+        }
+
+        File pdfSubDir = new File(pdfDir.getPath() + File.separator + GENERADOS);
+        if (!pdfSubDir.exists()) {
+            pdfSubDir.mkdir();
+        }
+
+        String nombre_completo = Environment.getExternalStorageDirectory() + File.separator + NOMBRE_CARPETA_APP + File.separator + GENERADOS + File.separator + NOMBRE_ARCHIVO;
+        File outputfile = new File(nombre_completo);
+        if (outputfile.exists()) {
+            outputfile.delete();
+        }
+
+        //COMPROBAR SI EL ARCHIVO EXISTE EN LA CARPETA PARA NO SOBRESCRIBIRLO
+        try {
+            PdfWriter pdfwritter = PdfWriter.getInstance(document, new FileOutputStream(nombre_completo));
+            //Crear el documento para escribirlo
+            document.open();
+
+            String htmlToPDF = "<html><><html>";
+            editTextTitulo = (EditText) findViewById(R.id.etTitulo);
+            String Titulo = editTextTitulo.getText().toString();
+
+            editTextNota = (EditText) findViewById(R.id.etNota);
+            String Contenido = editTextNota.getText().toString();
+
+            document.add(new Paragraph("Titulo de la Nota"));
+            document.add(new Paragraph(Titulo));
+
+            document.add(new Paragraph(Contenido));
+
+            Chunk chunk = new Chunk("");
+            chunk.setBackground(BaseColor.GRAY);
+            // Let's create de first Chapter (Creemos el primer capítulo)
+            Chapter chapter = new Chapter(new Paragraph("Imagen"), 1);
+            Image image;
+            try {
+                image = Image.getInstance(nota.getFoto());
+                image.setAbsolutePosition(10, 10);
+                image.setPaddingTop(20);
+
+                float scaler = ((document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin() + 50) / image.getWidth()) * 100;
+
+                image.scalePercent(scaler);
+                chapter.add(image);
+
+            } catch (BadElementException ex) {
+                System.out.println("Image BadElementException" + ex);
+            } catch (IOException ex) {
+                System.out.println("Image IOException " + ex);
+            }
+            document.add(chapter);
+
+            XMLWorkerHelper worker = XMLWorkerHelper.getInstance();
+            try {
+                worker.parseXHtml(pdfwritter, document, new StringReader(htmlToPDF));
+                document.close();
+                //Toast.makeText(VistaNota.this, "Se ha generado el PDF", Toast.LENGTH_LONG).show();
+                return nombre_completo;
+
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        } catch (DocumentException e) {
+            e.printStackTrace();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void muestraPDF(String archivo, Context context) {
+        //Toast.makeText(context, "Leyendo el Archivo", Toast.LENGTH_LONG).show();
+        File file = new File(archivo);
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(Uri.fromFile(file), "aplication/pdf");
+        Log.v("ruta",Uri.fromFile(file).getPath());
+        intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        Intent i = Intent.createChooser(intent, "Open file");
+
+        try {
+            context.startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(context, "No tiene una app para abrir este tipo de archivos", Toast.LENGTH_LONG).show();
+        }
+    }
+
 }
 

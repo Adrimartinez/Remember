@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
+    android:background="@color/fondoApli"
     tools:context="com.izv.dam.newquip.vistas.notas.VistaNota">
 
 <android.support.design.widget.CoordinatorLayout
@@ -52,30 +53,7 @@
         <include layout="@layout/activity_nota" />
 
     </android.support.v4.widget.NestedScrollView>
-
-    <!--<android.support.design.widget.FloatingActionButton
-        android:id="@+id/camara"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|start"
-        android:layout_margin="16dp"
-        app:layout_anchor="@+id/item_detail_container"
-        app:layout_anchorGravity="top|end"
-        app:srcCompat="@android:drawable/stat_notify_chat" />-->
-
     </android.support.design.widget.CoordinatorLayout>
-
-    <!--<android.support.design.widget.FloatingActionButton
-        android:id="@+id/addLista"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_gravity="bottom|right"
-        android:layout_margin="16dp"
-        android:src="@android:drawable/ic_input_add"
-        app:layout_anchorGravity="center_vertical|right" />-->
 
     <com.getbase.floatingactionbutton.FloatingActionsMenu
         android:id="@+id/fabAdd"
@@ -91,16 +69,6 @@
         android:layout_alignParentRight="true"
         android:layout_width="5dp"
         android:layout_height="5dp">
-
-        <com.getbase.floatingactionbutton.FloatingActionButton
-            android:id="@+id/addFoto"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:scaleType="center"
-            android:src="@drawable/ic_add_a_photo_black_24dp"
-            app:fab_colorNormal="@color/colorAccent"
-            app:fab_title="@string/addFoto"
-            app:fab_colorPressed="@color/colorAccent"/>
 
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/addCategoria"

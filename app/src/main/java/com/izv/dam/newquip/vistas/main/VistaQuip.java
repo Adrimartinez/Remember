@@ -2,9 +2,13 @@ package com.izv.dam.newquip.vistas.main;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -17,9 +21,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
+
 import com.izv.dam.newquip.R;
 import com.izv.dam.newquip.adaptadores.AdaptadorRecycle;
+import com.izv.dam.newquip.contrato.ContratoBaseDatos;
 import com.izv.dam.newquip.contrato.ContratoMain;
 import com.izv.dam.newquip.dialogo.DialogoBorrar;
 import com.izv.dam.newquip.dialogo.OnBorrarDialogListener;
@@ -27,27 +34,40 @@ import com.izv.dam.newquip.pojo.Nota;
 import com.izv.dam.newquip.vistas.notas.VistaNota;
 
 
-
-
-public class VistaQuip extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, ContratoMain.InterfaceVista , OnBorrarDialogListener {
+public class VistaQuip extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,
+        ContratoMain.InterfaceVista, OnBorrarDialogListener, LoaderManager.LoaderCallbacks<Cursor> {
 
     private AdaptadorRecycle adaptador;
     private PresentadorQuip presentador;
     private RecyclerView rec;
-    private RecyclerView recList;
-    private Toolbar toolbar;
     private Cursor cursor;
-    private Cursor cursorList;
-    private CardView card;
-    private LinearLayout ly;
-    private FloatingActionButton agregar;
+/*
+    class sincrona extends AsyncTask {
 
+        @Override
+        protected Object doInBackground(Object[] objects) {
+            return null;
+        }
+        @Override
+        protected void onPostExecute(Object o) {
+            super.onPostExecute(o);
+            mostrarDatos(cursor);
 
+        }
+    }
+*/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         init();
+        //sincrona sc = new sincrona();
+        //sc.execute();
+
+    }
+
+    private void init() {
+
         presentador = new PresentadorQuip(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -64,43 +84,11 @@ public class VistaQuip extends AppCompatActivity implements NavigationView.OnNav
 
 
         rec = (RecyclerView) findViewById(R.id.recycler);
-        //recList = (RecyclerView) findViewById(R.id.recyclerLista);
         rec.setHasFixedSize(true);
-        //recList.setHasFixedSize(true);
-
-        adaptador = new AdaptadorRecycle(cursor,this);
-        //adaptadorLista = new AdaptadorRecycleLista(cursorList, this);
-
+        adaptador = new AdaptadorRecycle(cursor, this);
         rec.setAdapter(adaptador);
-        //recList.setAdapter(adaptadorLista);
 
-        getContentResolver();
-        rec.setLayoutManager( new LinearLayoutManager(this, LinearLayoutManager.VERTICAL,false));
-
-
-
-
-/*
-        ListView lv = (ListView) findViewById(R.id.lvListaNotas);
-        adaptador = new AdaptadorNota(this, null);
-        lv.setAdapter(adaptador);
-
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                presentador.onEditNota(i);
-            }
-        });
-
-        lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(VistaQuip.this, "delete", Toast.LENGTH_SHORT).show();
-                presentador.onShowBorrarNota(i);
-                return true;
-            }
-        });
-        */
+        rec.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
 
         FloatingActionButton not = (FloatingActionButton) findViewById(R.id.action_b);
         not.setOnClickListener(new View.OnClickListener() {
@@ -109,12 +97,8 @@ public class VistaQuip extends AppCompatActivity implements NavigationView.OnNav
                 presentador.onAddNota();
             }
         });
-
     }
 
-    private void init() {
-
-    }
 
     @Override
     protected void onPause() {
@@ -129,10 +113,8 @@ public class VistaQuip extends AppCompatActivity implements NavigationView.OnNav
     }
 
 
-
     @Override
     public void mostrarAgregarNota() {
-        Toast.makeText(VistaQuip.this, "Nueva Nota", Toast.LENGTH_SHORT).show();
         Intent i = new Intent(this, VistaNota.class);
         startActivity(i);
     }
@@ -144,7 +126,6 @@ public class VistaQuip extends AppCompatActivity implements NavigationView.OnNav
 
     @Override
     public void mostrarEditarNota(Nota n) {
-        Toast.makeText(VistaQuip.this, "Editar nota", Toast.LENGTH_SHORT).show();
         Intent i = new Intent(this, VistaNota.class);
         Bundle b = new Bundle();
         b.putParcelable("nota", n);
@@ -158,7 +139,6 @@ public class VistaQuip extends AppCompatActivity implements NavigationView.OnNav
         fragmentBorrar.show(getSupportFragmentManager(), "Dialogo borrar");
 
     }
-
 
     @Override
     public void onBorrarPossitiveButtonClick(Nota n) {
@@ -205,25 +185,43 @@ public class VistaQuip extends AppCompatActivity implements NavigationView.OnNav
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
         int id = item.getItemId();
-
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        TextView textViewCategoria = (TextView)findViewById(R.id.textViewCategoria);
+        if (id == R.id.nav_trabajo) {
+            textViewCategoria.setText("Filtrado por: Trabajo");
+            presentador.filterCategorias(0);
+        } else if (id == R.id.nav_compras) {
+            textViewCategoria.setText("Filtrado por: Compras");
+            presentador.filterCategorias(1);
+        } else if (id == R.id.nav_ocio) {
+            textViewCategoria.setText("Filtrado por: Ocio");
+            presentador.filterCategorias(2);
+        } else if (id == R.id.nav_otros) {
+            textViewCategoria.setText("Filtrado por: Otros");
+            presentador.filterCategorias(3);
+        }else if (id == R.id.nav_todo) {
+            textViewCategoria.setText("Mostrando Todo");
+            presentador.onResume();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+    //LOADER
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(this, ContratoBaseDatos.TablaNota.URI_NOTA, null, null, null, null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if (adaptador != null) {
+            adaptador.swapCursor(data);
+        }
+    }
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        adaptador.swapCursor(null);
     }
 }

@@ -67,4 +67,8 @@ public class PresentadorQuip implements ContratoMain.InterfacePresentador{
         Nota n = this.modelo.getNota(position);
         this.onEditNota(n);
     }
+
+    public void filterCategorias(int categoria){
+        this.modelo.loadData(oyente, categoria);
+    }
 }

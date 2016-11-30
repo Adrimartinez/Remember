@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Quip</string>
+    <string name="app_name">NewQuip</string>
     // Strings botones
     <string name="ok">Aceptar</string>
     <string name="cancel">Cancelar</string>
@@ -13,8 +13,18 @@
     <string name="addLista">Añadir Lista</string>
     <string name="addCategoria">Añadir Categoria</string>
     <string name="addFoto">Añadir Foto</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="navigation_drawer_open">Abrir barra de navegacion</string>
+    <string name="navigation_drawer_close">Cerrar barra de navegacion</string>
+    <string name="contenido">Contenido</string>
+    <string name="categorias">Elige una categoria</string>
+    <string name="trabajo">Trabajo</string>
+    <string name="compras">Compras</string>
+    <string name="ocio">Ocio</string>
+    <string name="otros">Otros</string>
+    <string name="todos">Todos</string>
+    <string name="menuCamara">Elige una imagen</string>
+    <string name="foto">Sacar una foto</string>
+    <string name="galeria">Elegir de la galeria</string>
 
     <string name="action_settings">Settings</string>
 </resources>

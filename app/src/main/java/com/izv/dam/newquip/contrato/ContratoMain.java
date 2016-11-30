@@ -18,6 +18,8 @@ public interface ContratoMain {
 
         void loadData(OnDataLoadListener listener);
 
+        void loadData(OnDataLoadListener listener, int categoria);
+
         interface OnDataLoadListener {
             public void setCursor(Cursor c);
         }

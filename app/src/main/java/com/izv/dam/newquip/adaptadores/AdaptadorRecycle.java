@@ -5,8 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.DataSetObserver;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.FragmentActivity;
@@ -15,11 +14,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.izv.dam.newquip.R;
+import com.izv.dam.newquip.databinding.CardViewNotaBinding;
 import com.izv.dam.newquip.dialogo.DialogoBorrar;
 import com.izv.dam.newquip.pojo.Lista;
 import com.izv.dam.newquip.pojo.Nota;
@@ -43,46 +42,17 @@ public class AdaptadorRecycle extends RecyclerView.Adapter<AdaptadorRecycle.Nota
 
         private TextView txTitulo;
         private TextView txContenido;
-        private ImageView imagen;
+        CardViewNotaBinding binding;
 
 
         public NotasViewHolder(View itemView) {
             super(itemView);
-
-            txTitulo = (TextView) itemView.findViewById(R.id.cardTitulo);
-            txContenido = (TextView) itemView.findViewById(R.id.cardContenido);
-           // imagen = (ImageView) itemView.findViewById(R.id.imagenRecycler);
+            binding = DataBindingUtil.bind(itemView);
         }
-
 
 
         public void bindNota(Nota n) {
-            txTitulo.setText(n.getTitulo());
-            txContenido.setText(n.getNota());
-            BitmapFactory.Options op = new BitmapFactory.Options();
-            op.inJustDecodeBounds = false;
-            op.inSampleSize = 100;
-
-            Bitmap bit = BitmapFactory.decodeFile(n.getFoto(),op);
-            //imagen.setImageBitmap(bit);
-
-        }
-
-    }
-
-    public static class ListasViewHolder extends RecyclerView.ViewHolder{
-
-        private TextView txTitulo;
-        private TextView txContenido;
-
-        public ListasViewHolder(View itemView) {
-            super(itemView);
-
-            txContenido = (TextView) itemView.findViewById(R.id.contLista);
-        }
-
-        public void bindLista(Lista l){
-            txContenido.setText(l.getContenido());
+            binding.setNota(n);
         }
     }
 
@@ -167,18 +137,6 @@ public class AdaptadorRecycle extends RecyclerView.Adapter<AdaptadorRecycle.Nota
         holder.bindNota(item);
 
     }
-/*
-    public Cursor onChangeCursor (Cursor c){
-
-        if(this.cursor != null){
-            return null;
-        }else if(cursor == this.cursor){
-
-            return cursor;
-        }
-        return c;
-    }
-    */
 
     public void changeCursor(Cursor cursor) {
         Cursor old = swapCursor(cursor);

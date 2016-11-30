@@ -58,4 +58,11 @@ public class ModeloQuip implements ContratoMain.InterfaceModelo {
         Log.v("loadDataModeloQuipP", uri.toString());
         listener.setCursor(cursor);
     }
+
+    public void loadData(OnDataLoadListener listener, int categoria) {
+        String cateS = Integer.toString(categoria);
+        cursor = this.resolver.query(uri,null,"ID_ETIQUETAS='"+cateS+"'",null,null);
+        Log.v("loadDataModeloQuipFilte", uri.toString());
+        listener.setCursor(cursor);
+    }
 }
