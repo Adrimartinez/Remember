@@ -20,10 +20,10 @@ public class ContratoBaseDatos {
         //BaseColumns incluye de forma predeterminada el campo _id
         public static final String TABLA = "nota";
         public static final String TITULO = "titulo";
-        public static final String NOTA = "nota";
+        public static final String CONTENIDO = "contenido";
         public static final String FOTO = "foto";
         public static final String ID_ETIQUETAS = "id_etiquetas";
-        public static final String[] PROJECTION_ALL = {_ID, TITULO, NOTA, ID_ETIQUETAS};
+        public static final String[] PROJECTION_ALL = {_ID, TITULO, CONTENIDO, ID_ETIQUETAS};
         public static final String SORT_ORDER_DEFAULT = _ID + " desc";
         public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + AUTORIDAD + " . " + TABLA;
         public static final String CONTENT_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + AUTORIDAD + " . " + TABLA;

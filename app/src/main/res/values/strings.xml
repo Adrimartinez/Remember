@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">NewQuip</string>
+    <string name="app_name">Remember</string>
     // Strings botones
     <string name="ok">Aceptar</string>
     <string name="cancel">Cancelar</string>

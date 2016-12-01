@@ -61,17 +61,17 @@ public class ModeloNota implements ContratoNota.InterfaceModelo {
     }
 
     private Uri insertNota(Nota n) {
-        if(n.getNota().trim().compareTo("")==0 && n.getTitulo().trim().compareTo("")==0) {
+        if(n.getContenido().trim().compareTo("")==0 && n.getTitulo().trim().compareTo("")==0) {
             return null;
         }
         //return gn.insert(n);
         Log.v("insertNotaN", uriNota.toString());
-        Log.v("trim", Integer.toString(n.getNota().trim().compareTo("")));
+        Log.v("trim", Integer.toString(n.getContenido().trim().compareTo("")));
         return this.resolver.insert(uriNota, n.getContentValues());
     }
 
     private int updateNota(Nota n) {
-        if(n.getNota().trim().compareTo("")==0 && n.getTitulo().trim().compareTo("")==0) {
+        if(n.getContenido().trim().compareTo("")==0 && n.getTitulo().trim().compareTo("")==0) {
             this.deleteNota(n);
             Log.v("updateNota0", uriNota.toString());
             return 0;

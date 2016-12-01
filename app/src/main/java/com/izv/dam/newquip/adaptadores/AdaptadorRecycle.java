@@ -6,23 +6,21 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.DataSetObserver;
 import android.databinding.DataBindingUtil;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.izv.dam.newquip.R;
 import com.izv.dam.newquip.databinding.CardViewNotaBinding;
 import com.izv.dam.newquip.dialogo.DialogoBorrar;
-import com.izv.dam.newquip.pojo.Lista;
 import com.izv.dam.newquip.pojo.Nota;
-import com.izv.dam.newquip.vistas.main.VistaQuip;
 import com.izv.dam.newquip.vistas.notas.VistaNota;
 
 /**
@@ -35,24 +33,40 @@ public class AdaptadorRecycle extends RecyclerView.Adapter<AdaptadorRecycle.Nota
     private boolean mDataValid;
     private int mRowIDColumn;
     private Context context;
-    final VistaQuip vista = new VistaQuip();
 
 
     public static class NotasViewHolder extends RecyclerView.ViewHolder {
 
         private TextView txTitulo;
         private TextView txContenido;
+        private ImageView imagen;
         CardViewNotaBinding binding;
 
 
         public NotasViewHolder(View itemView) {
             super(itemView);
             binding = DataBindingUtil.bind(itemView);
+            imagen = (ImageView) itemView.findViewById(R.id.imagenRecycler);
         }
 
 
         public void bindNota(Nota n) {
             binding.setNota(n);
+            BitmapFactory.Options op = new BitmapFactory.Options();
+
+            int targetW = 100;
+            int targetH = 75;
+            op.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(n.getFoto(), op);
+            int photoW = op.outWidth;
+            int photoH = op.outHeight;
+
+            int scaleFactor = Math.min(photoW / targetW, photoH / targetH);
+
+            op.inJustDecodeBounds = false;
+            op.inSampleSize = scaleFactor;
+
+            imagen.setImageBitmap(BitmapFactory.decodeFile(n.getFoto(),op));
         }
     }
 

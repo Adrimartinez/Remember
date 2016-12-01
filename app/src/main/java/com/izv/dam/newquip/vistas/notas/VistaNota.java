@@ -37,6 +37,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
+
 import com.itextpdf.text.BadElementException;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chapter;
@@ -53,6 +54,7 @@ import com.izv.dam.newquip.R;
 import com.izv.dam.newquip.contrato.ContratoNota;
 import com.izv.dam.newquip.pojo.Lista;
 import com.izv.dam.newquip.pojo.Nota;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -84,6 +86,7 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
     private String rutaTemp;
     private static final String NOMBRE_CARPETA_APP = "com.izv.dam.newquip";
     private static final String GENERADOS = "MisArchivos";
+    private String ruta = null;
 
 
     @Override
@@ -106,8 +109,13 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
                 nota = b.getParcelable("nota");
             }
         }
-        mostrarNota(nota);
+
         init();
+
+        mostrarNota(nota);
+       /* if(ruta != null){
+            setPic(ruta);
+        }*/
     }
 
     @Override
@@ -127,14 +135,41 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+
+        outState.putString("titulo", nota.getTitulo());
+        outState.putString("contenido", nota.getContenido());
         outState.putParcelable("nota", nota);
+        outState.putString("foto",mCurrentPhotoPath);
+
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        //recuperar
+        String titulo = savedInstanceState.getString("titulo");
+        editTextTitulo.setText(titulo);
+        String contenido = savedInstanceState.getString("contenido");
+        editTextNota.setText(contenido);
+        ruta = savedInstanceState.getString("foto");
+        //  setPic(savedInstanceState.getString("foto"));
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        if (nota.getFoto() != null) {
+            mCurrentPhotoPath = nota.getFoto();
+            setPic(mCurrentPhotoPath);
+        }
     }
 
     @Override
     public void mostrarNota(Nota n) {
         editTextTitulo.setText(nota.getTitulo());
-        editTextNota.setText(nota.getNota());
+        editTextNota.setText(nota.getContenido());
         mostrarListas(n.getId());
+        Log.v("prueba","llegado");
+
     }
 
     public void mostrarListas(long id) {
@@ -177,7 +212,7 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
 
     private void saveNota() {
         nota.setTitulo(editTextTitulo.getText().toString());
-        nota.setNota(editTextNota.getText().toString());
+        nota.setContenido(editTextNota.getText().toString());
         nota.setFoto(mCurrentPhotoPath);
         long r = presentador.onSaveNota(nota);
         if (r > 0 & nota.getId() == 0) {
@@ -225,6 +260,7 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
 
         //AÑADIR CATEGORIA
         com.getbase.floatingactionbutton.FloatingActionButton addCategoria = (com.getbase.floatingactionbutton.FloatingActionButton) findViewById(R.id.addCategoria);
@@ -418,14 +454,12 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
 
             } else if (resultCode == Activity.RESULT_OK) {
                 mCurrentPhotoPath = rutaTemp;
-                Log.v("ruta", mCurrentPhotoPath);
                 galleryAddPic(mCurrentPhotoPath);
                 setPic(mCurrentPhotoPath);
-                Log.v("ruta buena", mCurrentPhotoPath);
                 nota.setFoto(mCurrentPhotoPath);
             }
-
         }
+
         if (requestCode == GALERY_REQUEST && resultCode == RESULT_OK && null != data) {
 
             Uri selectedImage = data.getData();
@@ -481,7 +515,9 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
 
         // Determine how much to scale down the image
         int scaleFactor = Math.min(photoW / targetW, photoH / targetH);
-
+        if(scaleFactor == 1 ){
+            scaleFactor = scaleFactor*2;
+        }
         // Decode the image file into a Bitmap sized to fill the View
         bmOptions.inJustDecodeBounds = false;
         bmOptions.inSampleSize = scaleFactor;
@@ -489,16 +525,6 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
 
         Bitmap bitmap = BitmapFactory.decodeFile(path, bmOptions);
         imagen.setImageBitmap(bitmap);
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-
-        if (nota.getFoto() != null) {
-            mCurrentPhotoPath = nota.getFoto();
-            setPic(mCurrentPhotoPath);
-        }
     }
 
     @Override
@@ -513,21 +539,22 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
         }
     }
 
-    class second extends AsyncTask<Void,Void,String>{
+    class second extends AsyncTask<Void, Void, File> {
 
 
         @Override
-        protected String doInBackground(Void... voids) {
+        protected File doInBackground(Void... voids) {
             return generaPDF();
         }
+
         @Override
-        protected void onPostExecute(String o) {
+        protected void onPostExecute(File o) {
             super.onPostExecute(o);
-            muestraPDF(o,getBaseContext());
+            muestraPDF(o, getBaseContext());
         }
     }
 
-    public String generaPDF() {
+    public File generaPDF() {
         Document document = new Document(PageSize.LETTER);
 
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -595,7 +622,7 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
                 worker.parseXHtml(pdfwritter, document, new StringReader(htmlToPDF));
                 document.close();
                 //Toast.makeText(VistaNota.this, "Se ha generado el PDF", Toast.LENGTH_LONG).show();
-                return nombre_completo;
+                return new File(nombre_completo);
 
 
             } catch (IOException e) {
@@ -611,17 +638,17 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
         return null;
     }
 
-    public void muestraPDF(String archivo, Context context) {
+    public void muestraPDF(File archivo, Context context) {
         //Toast.makeText(context, "Leyendo el Archivo", Toast.LENGTH_LONG).show();
-        File file = new File(archivo);
+
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.fromFile(file), "aplication/pdf");
-        Log.v("ruta",Uri.fromFile(file).getPath());
+        Uri file = FileProvider.getUriForFile(VistaNota.this,
+                BuildConfig.APPLICATION_ID + ".provider",
+                generaPDF());
+        intent.setDataAndType(file, "aplication/pdf");
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-        Intent i = Intent.createChooser(intent, "Open file");
 
         try {
             context.startActivity(intent);

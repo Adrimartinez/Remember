@@ -12,7 +12,7 @@ import java.sql.Blob;
 public class Nota implements Parcelable {
 
     private long id, idEtiqueta;
-    private String titulo, nota, foto;
+    private String titulo, contenido, foto;
 
 
 
@@ -20,10 +20,10 @@ public class Nota implements Parcelable {
         this(0, null, null, null, 0);
     }
 
-    public Nota(long id, String titulo, String foto, String nota, int idEtiqueta) {
+    public Nota(long id, String titulo, String foto, String contenido, int idEtiqueta) {
         this.id = id;
         this.titulo = titulo;
-        this.nota = nota;
+        this.contenido = contenido;
         this.foto = foto;
         this.idEtiqueta = idEtiqueta;
     }
@@ -31,7 +31,7 @@ public class Nota implements Parcelable {
     protected Nota(Parcel in) {
         id = in.readLong();
         titulo = in.readString();
-        nota = in.readString();
+        contenido = in.readString();
         foto = in.readString();
         idEtiqueta = in.readLong();
     }
@@ -72,12 +72,12 @@ public class Nota implements Parcelable {
         this.titulo = titulo;
     }
 
-    public String getNota() {
-        return nota;
+    public String getContenido() {
+        return contenido;
     }
 
-    public void setNota(String nota) {
-        this.nota = nota;
+    public void setContenido(String contenido) {
+        this.contenido = contenido;
     }
 
     public long getIdEtiqueta() {
@@ -106,7 +106,7 @@ public class Nota implements Parcelable {
             valores.put(ContratoBaseDatos.TablaNota._ID, this.getId());
         }
         valores.put(ContratoBaseDatos.TablaNota.TITULO, this.getTitulo());
-        valores.put(ContratoBaseDatos.TablaNota.NOTA, this.getNota());
+        valores.put(ContratoBaseDatos.TablaNota.CONTENIDO, this.getContenido());
         valores.put(ContratoBaseDatos.TablaNota.FOTO, this.getFoto());
         valores.put(ContratoBaseDatos.TablaNota.ID_ETIQUETAS, this.getIdEtiqueta());
         return valores;
@@ -116,7 +116,7 @@ public class Nota implements Parcelable {
         Nota objeto = new Nota();
         objeto.setId(c.getLong(c.getColumnIndex(ContratoBaseDatos.TablaNota._ID)));
         objeto.setTitulo(c.getString(c.getColumnIndex(ContratoBaseDatos.TablaNota.TITULO)));
-        objeto.setNota(c.getString(c.getColumnIndex(ContratoBaseDatos.TablaNota.NOTA)));
+        objeto.setContenido(c.getString(c.getColumnIndex(ContratoBaseDatos.TablaNota.CONTENIDO)));
         objeto.setFoto(c.getString(c.getColumnIndex((ContratoBaseDatos.TablaNota.FOTO))));
         objeto.setIdEtiqueta(c.getLong(c.getColumnIndex(ContratoBaseDatos.TablaNota.ID_ETIQUETAS)));
         return objeto;
@@ -127,7 +127,7 @@ public class Nota implements Parcelable {
         return "Nota{" +
                 "id=" + id +
                 ", titulo='" + titulo + '\'' +
-                ", nota='" + nota + '\'' +
+                ", contenido='" + contenido + '\'' +
                 ", foto='" + foto + '\'' +
                 ", id_etiqueta='" + idEtiqueta + '\'' +
                 '}';
@@ -142,7 +142,7 @@ public class Nota implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeLong(id);
         dest.writeString(titulo);
-        dest.writeString(nota);
+        dest.writeString(contenido);
         dest.writeString(foto);
         dest.writeLong(idEtiqueta);
     }

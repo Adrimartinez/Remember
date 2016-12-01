@@ -27,7 +27,7 @@ public class Ayudante extends SQLiteOpenHelper {
                 " (" +
                 ContratoBaseDatos.TablaNota._ID + " integer primary key autoincrement , " +
                 ContratoBaseDatos.TablaNota.TITULO + " text, " +
-                ContratoBaseDatos.TablaNota.NOTA + " text, " +
+                ContratoBaseDatos.TablaNota.CONTENIDO + " text, " +
                 ContratoBaseDatos.TablaNota.FOTO + " text, " +
                 ContratoBaseDatos.TablaNota.ID_ETIQUETAS + " integer " +
                 " ); ";
