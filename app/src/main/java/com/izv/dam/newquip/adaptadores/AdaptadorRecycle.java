@@ -52,6 +52,9 @@ public class AdaptadorRecycle extends RecyclerView.Adapter<AdaptadorRecycle.Nota
 
         public void bindNota(Nota n) {
             binding.setNota(n);
+            if(n.getFoto()!= null){
+
+
             BitmapFactory.Options op = new BitmapFactory.Options();
 
             int targetW = 100;
@@ -67,6 +70,7 @@ public class AdaptadorRecycle extends RecyclerView.Adapter<AdaptadorRecycle.Nota
             op.inSampleSize = scaleFactor;
 
             imagen.setImageBitmap(BitmapFactory.decodeFile(n.getFoto(),op));
+            }
         }
     }
 
